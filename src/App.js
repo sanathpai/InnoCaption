@@ -4,14 +4,13 @@ import { Provider } from "react-redux";
 import { store } from "./app/store";
 import Navbar from "./Components/Navbar";
 import { Box } from "@mui/material";
-import CustomThemeProvider from "./Components/ThemeContext"; // If you're not using ThemeContext directly, no need to import it here
+
 import ProductList from "./Components/ProductList";
 import Cart from "./Components/Cart";
 
 const App = () => {
   return (
     <Provider store={store}>
-      <CustomThemeProvider>
         <Router>
           <Navbar />
           <Routes>
@@ -23,11 +22,9 @@ const App = () => {
                 </Box>
               }
             />
-            {/* <Route path="/cart" element={<Cart />} /> */}
-            {/* Define other routes here */}
+            <Route path="/cart" element={<Cart />} />
           </Routes>
         </Router>
-      </CustomThemeProvider>
     </Provider>
   );
 };

@@ -18,7 +18,7 @@ export const cartApiSlice = createApi({
       providesTags: ["carts"],
     }),
     addToCart: builder.mutation({
-      query: (args) => ({
+      query: (args) => ({ 
         url: "/1",
         method: "PATCH",
         body: {
@@ -32,7 +32,10 @@ export const cartApiSlice = createApi({
       query: (args) => ({
         url: "/1",
         method: "PATCH",
-        body: args.productList,
+        body:  {
+          merge: true,
+          products: [args.product],
+        },
       }),
       invalidatesTags: ["carts"],
     }),

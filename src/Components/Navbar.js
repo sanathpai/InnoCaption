@@ -1,13 +1,12 @@
-// src/components/Navbar.js
-import React, { useState, useContext } from 'react';
-import { AppBar, Toolbar, Typography, IconButton, Button, TextField, Switch } from '@mui/material';
-import { ShoppingCart as ShoppingCartIcon, AccountCircle as AccountCircleIcon, Search as SearchIcon, Brightness4, Brightness7 } from '@mui/icons-material';
+import React, { useState } from 'react';
+import { AppBar, Toolbar, Typography, IconButton, TextField } from '@mui/material';
+import { ShoppingCart as ShoppingCartIcon, Search as SearchIcon } from '@mui/icons-material';
 import { Link } from 'react-router-dom';
-import { ThemeContext } from './ThemeContext'; 
+import { useNavigate } from 'react-router-dom';
 
 const Navbar = () => {
-  const [searchQuery, setSearchQuery] = useState('');
-  const { theme, toggleTheme } = useContext(ThemeContext); 
+  const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState(''); 
 
   const handleSearchChange = (event) => {
     setSearchQuery(event.target.value);
@@ -15,14 +14,14 @@ const Navbar = () => {
 
   const handleSubmitSearch = (event) => {
     event.preventDefault();
-    console.log('Searching for:', searchQuery);
+    navigate(`/?search=${searchQuery}`); // search query
   };
 
   return (
     <AppBar position="static">
       <Toolbar>
         <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-          Sanath
+          E-Commerce
         </Typography>
         <form onSubmit={handleSubmitSearch} style={{ flexGrow: 2 }}>
           <TextField
@@ -30,7 +29,7 @@ const Navbar = () => {
             size="small"
             placeholder="Search..."
             value={searchQuery}
-            onChange={handleSearchChange}
+            onChange={handleSearchChange} // search functionality
             InputProps={{
               endAdornment: (
                 <IconButton type="submit" aria-label="search">
@@ -43,12 +42,7 @@ const Navbar = () => {
         <IconButton color="inherit" component={Link} to="/cart">
           <ShoppingCartIcon />
         </IconButton>
-        <IconButton color="inherit">
-          <AccountCircleIcon />
-        </IconButton>
-        <IconButton color="inherit" onClick={toggleTheme}>
-          {theme === 'dark' ? <Brightness7 /> : <Brightness4 />}
-        </IconButton>
+
       </Toolbar>
     </AppBar>
   );

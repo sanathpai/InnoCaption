@@ -1,47 +1,65 @@
 import React from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { removeFromCart, updateCartItem } from '../actions/cartActions';
-import IconButton from '@mui/material/IconButton';
+import { IconButton, List, ListItem, ListItemText, ListItemSecondaryAction, Snackbar } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import DeleteIcon from '@mui/icons-material/Delete';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemText from '@mui/material/ListItemText';
-import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
+import { useAddToCartMutation } from '../app/api/cartApiSlice';
+import { useDispatch, useSelector } from 'react-redux';
+import { updateProduct, deleteProduct, selectCart } from '../app/features/cartSlice';
 
 const Cart = () => {
-  const cart = useSelector(state => state.cart.items);
   const dispatch = useDispatch();
+  const currentCartData = useSelector(selectCart);
+  const [updateCart, { isSuccess, isError }] = useAddToCartMutation(); //API
 
-  const handleRemove = (productId) => {
-    dispatch(removeFromCart(productId));
+  const cartItems = Object.values(currentCartData); //get all cart items.
+
+  const handleQuantityChange = (productId, delta) => {
+    const product = cartItems.find(item => item.id === productId); //map the product with id get the product to update
+  
+    if (product) {
+      const newQuantity = Math.max(product.quantity + delta, 1); // handle quantity change
+      const updatedProduct = { ...product, quantity: newQuantity };
+      dispatch(updateProduct({ product: updatedProduct })); //local call for update 
+    }
   };
 
-  const handleUpdate = (productId, quantity) => {
-    dispatch(updateCartItem(productId, quantity));
+  const handleDelete = async (productId) => {
+    const updatedProductList = cartItems.filter(item => item.id !== productId); // get updated list without the deleted product
+    console.log(updatedProductList);
+  
+    try {
+      await updateCart({ product: updatedProductList }).unwrap(); // api call
+      dispatch(deleteProduct({ productId })); // local state call
+    } catch (error) {
+      console.error('Failed to delete product from cart:', error);
+    }
   };
+  
 
   return (
-    <List>
-      {cart.map(item => (
-        <ListItem key={item.cartItemId}>
-          <ListItemText primary={item.title} secondary={`Quantity: ${item.quantity}`} />
-          <ListItemSecondaryAction>
-            <IconButton onClick={() => handleUpdate(item.productId, item.quantity + 1)}>
-              <AddIcon />
-            </IconButton>
-            <IconButton onClick={() => item.quantity > 1 && handleUpdate(item.productId, item.quantity - 1)}>
-            <RemoveIcon />
-            </IconButton>
-            <IconButton onClick={() => handleRemove(item.productId)}>
-            <DeleteIcon />
-            </IconButton>
-          </ListItemSecondaryAction>
-        </ListItem>
+    <>
+      <List>
+        {cartItems.map((item) => (
+          <ListItem key={item.id}>
+            <ListItemText primary={item.title} secondary={`Quantity: ${item.quantity}`} />
+            <ListItemSecondaryAction>
+              <IconButton onClick={() => handleQuantityChange(item.id, 1)}>
+                <AddIcon />
+              </IconButton>
+              <IconButton onClick={() => handleQuantityChange(item.id, -1)}>
+                <RemoveIcon />
+              </IconButton>
+              <IconButton onClick={() => handleDelete(item.id)}>
+                <DeleteIcon />
+              </IconButton>
+            </ListItemSecondaryAction>
+          </ListItem>
         ))}
-    </List>
-        );
-        };
+      </List>
+      {isError && <Snackbar open={isError} autoHideDuration={6000} message="Failed to update cart. Please try again." />}
+    </>
+  );
+};
 
 export default Cart;
