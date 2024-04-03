@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect,useState } from "react";
 import { Grid, Card, CardMedia, CardContent, CardActions, Button, Typography, Container, CircularProgress, Snackbar,Box } from "@mui/material";
 import { useSearchParams } from "react-router-dom";
 import { useLazyGetAllProductsQuery, useLazySearchProductsQuery } from "../app/api/productsApiSlice";
@@ -25,13 +25,26 @@ const ProductList = () => {
   const finalProductsData = searchQuery ? searchResults : productsData;
   const finalProductsLoading = searchQuery ? searchLoading : productsLoading;
 
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+
+  const handleCloseSnackbar = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setSnackbarOpen(false);
+  };
   const handleAddToCart = async (product) => {
     const productWithQuantity = { ...product, quantity: 1 };
     try {
       await addToCart({ product: productWithQuantity }).unwrap(); // api call
       dispatch(addProduct({ product: productWithQuantity })); // local state
+      setSnackbarMessage(`${product.title} added to cart!`);
+      setSnackbarOpen(true);
     } catch (err) {
       console.error('Failed to add product to cart:', err);
+      setSnackbarMessage("Failed to add product to cart. Please try again.");
+      setSnackbarOpen(true);
     }
   };
 
@@ -62,13 +75,12 @@ const ProductList = () => {
           </Grid>
         ))}
       </Grid>
-      {isError && (
-        <Snackbar
-          open={isError}
-          autoHideDuration={6000}
-          message="Failed to add product to cart. Please try again."
-        />
-      )}
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={3000}
+        onClose={handleCloseSnackbar}
+        message={snackbarMessage}
+      />
     </Container>
   );
 };

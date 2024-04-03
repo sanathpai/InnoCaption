@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { IconButton, List, ListItem, ListItemText, ListItemSecondaryAction, Snackbar } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
@@ -11,6 +11,9 @@ const Cart = () => {
   const dispatch = useDispatch();
   const currentCartData = useSelector(selectCart);
   const [updateCart, { isSuccess, isError }] = useAddToCartMutation(); //API
+
+  const [snackbarOpen, setSnackbarOpen] = useState(false); // Snackbar state
+  const [snackbarMessage, setSnackbarMessage] = useState('');
 
   const cartItems = Object.values(currentCartData); //get all cart items.
 
@@ -31,11 +34,20 @@ const Cart = () => {
     try {
       await updateCart({ product: updatedProductList }).unwrap(); // api call
       dispatch(deleteProduct({ productId })); // local state call
+      setSnackbarMessage('Item deleted from cart.');
+      setSnackbarOpen(true);
     } catch (error) {
       console.error('Failed to delete product from cart:', error);
+      setSnackbarMessage('Failed to delete item. Please try again.');
+      setSnackbarOpen(true);
     }
   };
-  
+  const handleCloseSnackbar = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setSnackbarOpen(false);
+  };
 
   return (
     <>
@@ -57,7 +69,12 @@ const Cart = () => {
           </ListItem>
         ))}
       </List>
-      {isError && <Snackbar open={isError} autoHideDuration={6000} message="Failed to update cart. Please try again." />}
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+        message={snackbarMessage}
+      />
     </>
   );
 };
